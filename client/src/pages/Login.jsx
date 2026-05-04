@@ -1,9 +1,12 @@
 import React from 'react'
+import { useState } from 'react'
+import axios from 'axios';
 
 
 const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState(null);
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -11,9 +14,16 @@ const Login = () => {
             const responce = await axios.post("http://localhost:5000/api/auth/login", 
                 {email, password}
             );
-            console.log(responce)
+            if (responce.data.success) {
+                alert("Successfully Login")
+            }
+
         } catch (error) {
-            console.error(error);
+            if (error.responce && error.responce.data) {
+                setError(error.responce.data.error);
+            } else {
+                setError("Server Error.");
+            }
         }
     }
 
@@ -21,7 +31,9 @@ const Login = () => {
         <div className='flex flex-col items-center h-screen justify-center bg-gradient-to-b from-teal-600 from-50% to-50% space-y-6'>
             <h2 className='font-pacifico text-3xl text-white'>Employee Management System</h2>
         <div className='border shadow p-6 w-80 bg-white'>
-            <h1 className='text-2xl font-bold mb-4'>Login</h1>
+            <h2 className='text-2xl font-bold mb-4'>Login</h2>
+            {error && <p className='text-red-500'>{error}</p>}
+
             <form onSubmit={handleSubmit}>
                 <div className='mb-4'>
                     <label htmlFor="email" className='block text-gray-700'>Email</label>
@@ -30,6 +42,7 @@ const Login = () => {
                     className='w-full px-3 py-2 border'
                     placeholder="Enter Email" 
                     onChange={(e)=> setEmail(e.target.value)}
+                    required
                     />
                 </div>
                 <div className='mb-4'>
@@ -39,6 +52,7 @@ const Login = () => {
                     className='w-full px-3 py-2 border'
                     placeholder="*******" 
                     onChange={(e)=> setPassword(e.target.value)}
+                    required
                     />
                 </div>
                 <div className='mb-4 flex items-center justify-between'>
