@@ -1,28 +1,71 @@
-import React, { useContext } from 'react'
+import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
-const { createContext, useState } = React;
+// Create Context
+const UserContext = createContext();
 
-const userContext = createContext()
+// Provider Component
+const AuthContext = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const verifyUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-const authContext = (children) => {
-    const [user, setUser] = useState(null);
+        if (token) {
+          const response = await axios.get(
+            "http://localhost:5000/api/auth/verify",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-    const login = (user) => {
-        setUser(user);
+          if (response.data.success) {
+            setUser(response.data.user);
+          } else {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (error.response && error.response.data.error) {
+          setUser(null);
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const logout = () => {
-        setUser(null)
-        localStorage.removeItem("token");
+    verifyUser();
+  }, []);
 
-    }
+  // Login function
+  const login = (userData) => {
+    setUser(userData);
+  };
+
+  // Logout function
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+    // navigate("/login");
+  };
+
   return (
-    <userContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, login, logout, loading }}>
       {children}
-    </userContext.Provider>
-  )
-}
+    </UserContext.Provider>
+  );
+};
 
-export const useAuth = () => useContext(userContext);
-export default authContext
+// Custom Hook
+export const useAuth = () => useContext(UserContext);
+
+export default AuthContext;
