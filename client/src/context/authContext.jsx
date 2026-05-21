@@ -28,6 +28,7 @@ const AuthContext = ({ children }) => {
             setUser(response.data.user);
           } else {
             setUser(null);
+            setLoading(false);
           }
         } else {
           setUser(null);

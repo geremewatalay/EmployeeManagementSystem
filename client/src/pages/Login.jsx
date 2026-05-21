@@ -23,7 +23,6 @@ const Login = () => {
             );
 
             if (response.data.success) {
-
                 login(response.data.user);
 
                 localStorage.setItem(
